@@ -114,6 +114,7 @@ void testStoreImplementation(
 
       test('get() returns null after delete', () async {
         userStore.save(user);
+        await Future.delayed(Duration(milliseconds: 500));
         userStore.delete('123');
 
         await Future.delayed(Duration(milliseconds: 500));
@@ -125,6 +126,7 @@ void testStoreImplementation(
 
       test('listen() emits null after delete', () async {
         userStore.save(user);
+        await Future.delayed(Duration(milliseconds: 500));
         userStore.delete('123');
 
         await Future.delayed(Duration(milliseconds: 500));
