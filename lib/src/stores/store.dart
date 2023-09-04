@@ -5,10 +5,11 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 
 import '../storable.dart';
+import '../utils.dart';
 
 abstract class StoreDataModifiedEvent<T extends Storable> {
   T get storable;
-  StorableId get id => storable.id;
+  String get id => storable.id;
 }
 
 class StorableCreatedEvent<T extends Storable>
@@ -56,10 +57,9 @@ abstract class Store<T extends Storable> {
       StreamController.broadcast();
   Stream<StoreDataModifiedEvent<T>> get eventStream => _controller.stream;
 
-  final Map<StorableId, List<StreamController<T?>>> _valueStreamControllers =
-      {};
+  final Map<String, List<StreamController<T?>>> _valueStreamControllers = {};
 
-  final Map<StorableId, T> _data = {};
+  final Map<String, T> _data = {};
 
   final Completer<void> _loadedCompleter = Completer();
   bool get _loaded => _loadedCompleter.isCompleted;
@@ -84,7 +84,7 @@ abstract class Store<T extends Storable> {
   /// method if applicable or listen on [eventStream] for changes to single
   /// items.
   @protected
-  Future<void> persistAll(Map<StorableId, T> data);
+  Future<void> persistAll(Map<String, T> data);
 
   Future<void> _load() async {
     final data = await load();
@@ -100,12 +100,12 @@ abstract class Store<T extends Storable> {
   /// Load the data from persistent storage. This method is called once when
   /// the store is created.
   @protected
-  Future<Map<StorableId, T>> load();
+  Future<Map<String, T>> load();
 
   /// Get a [Storable] by its [id]. If the [Storable] is not found, `null` is
   /// returned.
   T? get(String id) {
-    final storable = _data[StorableId(id)];
+    final storable = _data[id];
     return storable;
   }
 
@@ -125,7 +125,7 @@ abstract class Store<T extends Storable> {
     if (storable == null && !_loaded) {
       return Stream.value(null);
     }
-    final storableId = storable?.id ?? StorableId(id);
+    final storableId = storable?.id ?? id;
 
     final controller = StreamController<T?>();
     controller.onListen = () {
@@ -148,7 +148,7 @@ abstract class Store<T extends Storable> {
       return value;
     }
 
-    value.id = StorableId.uuid();
+    value.id = uuidv4();
 
     final previous = _data[value.id];
     _data[value.id] = value;
@@ -162,12 +162,11 @@ abstract class Store<T extends Storable> {
   }
 
   void delete(String id) {
-    final key = StorableId(id);
-    if (!_data.containsKey(StorableId(id))) {
+    if (!_data.containsKey(id)) {
       return;
     }
-    final storable = _data[key] as T;
-    _data.remove(key);
+    final storable = _data[id] as T;
+    _data.remove(id);
     _controller.add(StorableDeletedEvent._(storable));
   }
 
@@ -182,7 +181,7 @@ abstract class Store<T extends Storable> {
     }
   }
 
-  void _notifyValueStreams(StorableId id, T? storable) {
+  void _notifyValueStreams(String id, T? storable) {
     if (!_loaded || !_valueStreamControllers.containsKey(id)) {
       return;
     }

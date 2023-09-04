@@ -19,7 +19,7 @@ class BigJsonStore<T extends Storable> extends Store<T> {
   }
 
   @override
-  Future<Map<StorableId, T>> load() async {
+  Future<Map<String, T>> load() async {
     // return {};
     final path = await this.path;
 
@@ -33,7 +33,7 @@ class BigJsonStore<T extends Storable> extends Store<T> {
 
     final paths = (await _dir!.list().map((event) => event.path).toList());
 
-    final data = <StorableId, T>{};
+    final data = <String, T>{};
     await Future.wait(
       paths.map(
         (e) async {
@@ -52,7 +52,7 @@ class BigJsonStore<T extends Storable> extends Store<T> {
   /// rewrite all files on every change. Instead, the [StoreDataModifiedEvent]
   /// is used to update the files on change.
   @override
-  Future<void> persistAll(Map<StorableId, T> data) {
+  Future<void> persistAll(Map<String, T> data) {
     return Future.value();
   }
 
@@ -61,7 +61,7 @@ class BigJsonStore<T extends Storable> extends Store<T> {
       return;
     }
 
-    final file = File(p.join(_dir!.path, '${event.id.id}.json'));
+    final file = File(p.join(_dir!.path, '${event.id}.json'));
     if (event is StorableCreatedEvent || event is StorableUpdatedEvent) {
       final json = jsonEncode(event.storable.asMap);
       await file.writeAsString(json);

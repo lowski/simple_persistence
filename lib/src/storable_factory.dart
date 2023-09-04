@@ -57,7 +57,7 @@ class StorableFactory {
 
     final storable = deserializer(map) as T;
     // ignore: invalid_use_of_protected_member
-    storable.id = StorableId(map[ReservedTokens.id] as String);
+    storable.id = map[ReservedTokens.id];
     return storable;
   }
 }

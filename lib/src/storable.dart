@@ -5,46 +5,24 @@ import 'dart:convert';
 import 'package:meta/meta.dart';
 
 import 'reserved_tokens.dart';
-import 'utils.dart';
-
-class StorableId {
-  /// The value of the [id] field when the id is empty.
-  static const StorableId empty = StorableId(ReservedTokens.emptyIdValue);
-
-  final String id;
-
-  const StorableId(this.id);
-
-  StorableId.uuid() : id = uuidv4();
-
-  bool get isSet => this != empty;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) || other is StorableId && id == other.id;
-
-  @override
-  int get hashCode => id.hashCode;
-
-  @override
-  String toString() => 'StorableId($id)';
-}
 
 abstract class Storable {
   // ignore: prefer_final_fields
-  StorableId _id = StorableId.empty;
+  String _id = ReservedTokens.emptyIdValue;
 
   /// The unique identifier of the object.
-  StorableId get id => _id;
+  String get id => _id;
 
   /// Set the [id] for the object. If the object already has an [id], this
   /// does nothing.
-  set id(StorableId value) {
-    if (id.isSet) {
+  set id(String value) {
+    if (id != ReservedTokens.emptyIdValue) {
       return;
     }
     _id = value;
   }
+
+  bool get hasId => id != ReservedTokens.emptyIdValue;
 
   /// The object data represented as a map.
   @protected
@@ -61,12 +39,9 @@ abstract class Storable {
         ...data,
       }.map(
         (key, value) => MapEntry(
-            key,
-            value is Storable
-                ? value.asMap
-                : value is StorableId
-                    ? value.id
-                    : value),
+          key,
+          value is Storable ? value.asMap : value,
+        ),
       );
 
   /// The serialized representation of the object.

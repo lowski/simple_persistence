@@ -20,7 +20,7 @@ class JsonFileStore<T extends Storable> extends Store<T> {
   });
 
   @override
-  Future<Map<StorableId, T>> load() async {
+  Future<Map<String, T>> load() async {
     final path = await this.path;
 
     assert(path.isNotEmpty);
@@ -37,7 +37,7 @@ class JsonFileStore<T extends Storable> extends Store<T> {
     }
 
     final list = List<Map>.from(jsonDecode(json));
-    final data = <StorableId, T>{};
+    final data = <String, T>{};
     for (final map in list) {
       final storable = storableFactory
           .deserializeMapRepresentation<T>(map as Map<String, dynamic>);
@@ -48,7 +48,7 @@ class JsonFileStore<T extends Storable> extends Store<T> {
   }
 
   @override
-  Future<void> persistAll(Map<StorableId, T> data) async {
+  Future<void> persistAll(Map<String, T> data) async {
     if (_file == null) {
       return;
     }

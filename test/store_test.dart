@@ -38,12 +38,12 @@ void testStoreImplementation(
       user = userStore.save(user);
 
       expect(user.id, isNotNull);
-      expect(user.id.isSet, true);
+      expect(user.hasId, true);
     });
 
     test('save() returns stored value', () async {
       final user = UserStorable(name: 'John Doe');
-      user.id = StorableId('123');
+      user.id = '123';
       userStore.save(user);
 
       expect(userStore.get('123'), user);
@@ -51,7 +51,7 @@ void testStoreImplementation(
 
     test('get() returns null after delete', () {
       final user = UserStorable(name: 'John Doe');
-      user.id = StorableId('123');
+      user.id = '123';
 
       userStore.save(user);
       userStore.delete('123');
@@ -66,7 +66,7 @@ void testStoreImplementation(
 
     test('listen() emits stored value', () async {
       final user = UserStorable(name: 'John Doe');
-      user.id = StorableId('123');
+      user.id = '123';
       userStore.save(user);
 
       expect(userStore.listen('123'), emits(user));
@@ -74,14 +74,14 @@ void testStoreImplementation(
 
     test('listen() emits same value as get', () {
       final user = UserStorable(name: 'John Doe');
-      user.id = StorableId('123');
+      user.id = '123';
       userStore.save(user);
 
       expect(userStore.listen('123'), emits(userStore.get('123')));
     });
 
     test('listen() emits updated value', () async {
-      final user = UserStorable(name: 'John Doe')..id = StorableId('123');
+      final user = UserStorable(name: 'John Doe')..id = '123';
       final userCopy = user.copyWith(name: 'Jane Doe');
 
       expect(userStore.listen('123'), emitsInOrder([null, user, userCopy]));
@@ -92,7 +92,7 @@ void testStoreImplementation(
 
     test('listen() emits null after delete', () async {
       final user = UserStorable(name: 'John Doe');
-      user.id = StorableId('123');
+      user.id = '123';
       userStore.save(user);
 
       expect(userStore.listen('123'), emitsInOrder([user, null, emitsDone]));
@@ -101,7 +101,7 @@ void testStoreImplementation(
     });
 
     group('after creating new instance', () {
-      final user = UserStorable(name: 'John Doe')..id = StorableId('123');
+      final user = UserStorable(name: 'John Doe')..id = '123';
       test('get() returns correct value', () async {
         userStore.save(user);
 
