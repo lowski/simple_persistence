@@ -20,6 +20,7 @@ A small package to easily store objects on disk.
     - [Create a `Store` for your `Storable`](#create-a-store-for-your-storable)
     - [Putting it together](#putting-it-together)
   - [Usage](#usage)
+    - [KVStore](#kvstore)
 
 ## Setup
 
@@ -132,5 +133,34 @@ void main() {
 
     // delete user
     User.store.delete(user.id);
+}
+```
+
+### KVStore
+
+The [KVStore] class can be used to store simple key-value pairs. Each [KVStore] instance has a prefix that separates the key spaces.
+
+```dart
+void main() {
+    // You need to initialize with a directory before creating any store
+    KVStore.init('/.../.../');
+
+    final kvs = KVStore('settings');
+
+    // Usage
+
+    // you can save any Type that can be automatically converted to JSON
+    kvs.save('bool', true);
+    kvs.save('int', 123);
+    kvs.save('double', 123.45);
+    kvs.save('string', 'the quick brown fox');
+    kvs.save('list', [1, 2, 3]);
+
+    kvs.get<int>('int'); // 123
+    kvs.get<double>('int'); // 123.00
+
+    kvs.delete('int');
+
+    kvs.clear();
 }
 ```

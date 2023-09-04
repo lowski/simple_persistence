@@ -26,7 +26,7 @@ abstract class Storable {
 
   /// The object data represented as a map.
   @protected
-  dynamic get data;
+  Map get data;
 
   /// A unique identifier for the type of object used for deserialization.
   /// By default, this is the hash code of the runtime type.
