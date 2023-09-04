@@ -6,6 +6,7 @@ import 'package:meta/meta.dart';
 
 import '../storable.dart';
 import '../utils.dart';
+import '../value_stream_controller.dart';
 
 abstract class StoreDataModifiedEvent<T extends Storable> {
   T get storable;
@@ -57,7 +58,7 @@ abstract class Store<T extends Storable> {
       StreamController.broadcast();
   Stream<StoreDataModifiedEvent<T>> get eventStream => _controller.stream;
 
-  final Map<String, List<StreamController<T?>>> _valueStreamControllers = {};
+  final _mvsc = MultiValueStreamController<String, T?>();
 
   final Map<String, T> _data = {};
 
@@ -69,7 +70,7 @@ abstract class Store<T extends Storable> {
 
   Store() {
     eventStream.listen((StoreDataModifiedEvent<T> event) {
-      _notifyValueStreams(
+      _notifyValueStream(
         event.id,
         event is StorableDeletedEvent ? null : event.storable,
       );
@@ -93,7 +94,7 @@ abstract class Store<T extends Storable> {
 
     // Notify all value streams that the data has been loaded.
     for (final e in _data.entries) {
-      _notifyValueStreams(e.key, e.value);
+      _notifyValueStream(e.key, e.value);
     }
   }
 
@@ -127,20 +128,10 @@ abstract class Store<T extends Storable> {
     }
     final storableId = storable?.id ?? id;
 
-    final controller = StreamController<T?>();
-    controller.onListen = () {
-      controller.add(get(id));
-    };
-    controller.onCancel = () {
-      _valueStreamControllers[storableId]?.remove(controller);
-    };
-    if (!_valueStreamControllers.containsKey(storableId)) {
-      _valueStreamControllers[storableId] = [controller];
-    } else {
-      _valueStreamControllers[storableId]!.add(controller);
-    }
+    final valueStream = _mvsc.getStream(storableId, initiallyNull: true);
+    _mvsc.add(id, get(id));
 
-    return controller.stream.distinct();
+    return valueStream;
   }
 
   T save(T value) {
@@ -181,29 +172,11 @@ abstract class Store<T extends Storable> {
     }
   }
 
-  void _notifyValueStreams(String id, T? storable) {
-    if (!_loaded || !_valueStreamControllers.containsKey(id)) {
-      return;
-    }
+  void _notifyValueStream(String id, T? storable) {
+    _mvsc.add(id, storable);
 
-    final controllers = List.of(_valueStreamControllers[id]!);
-    if (controllers.isEmpty) {
-      _valueStreamControllers.remove(id);
-      return;
-    }
-
-    for (final controller in controllers) {
-      if (controller.isClosed) {
-        _valueStreamControllers[id]?.remove(controller);
-        continue;
-      }
-      if (controller.isPaused) {
-        continue;
-      }
-      controller.add(storable);
-      if (storable == null) {
-        controller.close();
-      }
+    if (storable == null) {
+      _mvsc.close(id);
     }
   }
 }
