@@ -1,0 +1,15 @@
+name: simple_persistence
+description: A simple library for persisting data to disk.
+version: 0.1.0
+repository: https://github.com/lowski/simple_persistence
+
+environment:
+  sdk: ^3.0.3
+
+dependencies:
+  meta: ^1.9.1
+  path: ^1.8.3
+
+dev_dependencies:
+  lints: ^2.0.0
+  test: ^1.21.0
