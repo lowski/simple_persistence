@@ -103,6 +103,11 @@ abstract class Store<T extends Storable> {
   @protected
   Future<Map<String, T>> load();
 
+  /// Get a list of all [Storable] objects in the store.
+  List<T> list() {
+    return List.unmodifiable(_data.values);
+  }
+
   /// Get a [Storable] by its [id]. If the [Storable] is not found, `null` is
   /// returned.
   T? get(String id) {
