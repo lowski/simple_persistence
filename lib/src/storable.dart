@@ -30,7 +30,7 @@ abstract class Storable {
 
   /// A unique identifier for the type of object used for deserialization.
   /// By default, this is the hash code of the runtime type.
-  String get type => runtimeType.hashCode.toString();
+  String get type => runtimeType.toString().hashCode.toRadixString(36);
 
   /// The object fully represented as a map with embedded objects serialized.
   Map<String, dynamic> get asMap => {

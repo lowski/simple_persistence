@@ -19,7 +19,7 @@ class StorableFactory {
     String? typeId,
   }) {
     _deserializers[T] = deserializer;
-    typeId ??= T.hashCode.toString();
+    typeId ??= T.toString().hashCode.toRadixString(36);
     _types[typeId] = T;
   }
 
