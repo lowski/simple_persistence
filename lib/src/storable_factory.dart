@@ -37,11 +37,6 @@ class StorableFactory {
         'The type with id $typeId is not registered and can not be deserialized to a $T.',
       );
     }
-    if (T != Storable && type != T) {
-      throw UnsupportedError(
-        'The type with id $typeId is registered as a ${type.toString()} and can not be deserialized to a $T.',
-      );
-    }
     final deserializer = _deserializers[type];
     if (deserializer == null) {
       throw UnsupportedError(
@@ -55,9 +50,16 @@ class StorableFactory {
       }
     }
 
-    final storable = deserializer(map) as T;
+    final storable = deserializer(map);
+
+    if (T != Storable && storable is! T) {
+      throw UnsupportedError(
+        'The type with id $typeId is registered as a ${type.toString()} which cannot be cast to a $T.',
+      );
+    }
+
     // ignore: invalid_use_of_protected_member
     storable.id = map[ReservedTokens.id];
-    return storable;
+    return storable as T;
   }
 }
