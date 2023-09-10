@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:path/path.dart' as p;
-
 import '../../simple_persistence.dart';
 
 class _KVStorable extends Storable {
@@ -18,7 +16,7 @@ class _KVStorable extends Storable {
       };
 
   _KVStorable.fromMap(Map<String, dynamic> map) {
-    value.addAll(map['v'] as Map<String, dynamic>);
+    value = map['v'];
   }
 }
 
@@ -27,23 +25,24 @@ class _KVStorable extends Storable {
 /// [KVStore] is a wrapper around a [JsonFileStore] that stores a single
 /// [Storable] object. [KVStore] is not intended to be used for large data sets.
 class KVStore {
-  static Store<_KVStorable>? _store;
-
-  final String prefix;
+  final Store<_KVStorable>? _store;
 
   /// Create a new [KVStore] instance with a given prefix. A unique prefix is
   /// important to avoid collisions with other [KVStore] instances.
-  const KVStore(this.prefix);
+  KVStore(
+    FutureOr<String> path, {
+    StorableFactory? storableFactory,
+  }) : _store = JsonFileStore(
+          path: path,
+          storableFactory: (storableFactory
+                ?..registerDeserializer(_KVStorable.fromMap)) ??
+              _KVStorable.storableFactory,
+        );
 
-  static void init(FutureOr<String> dir) {
-    _store ??= JsonFileStore(
-      path: Future.value(dir).then((value) => p.join(value, 'kv_store.json')),
-      storableFactory: _KVStorable.storableFactory,
-    );
-  }
+  Future<void> get loaded => _store!.loaded;
 
   void delete(String id) {
-    _store!.delete('$prefix/$id');
+    _store!.delete(id);
   }
 
   void clear() {
@@ -51,14 +50,14 @@ class KVStore {
   }
 
   void save<T>(String id, T value) {
-    _store!.save(_KVStorable(value)..id = '$prefix/$id');
+    _store!.save(_KVStorable(value)..id = id);
   }
 
   T? get<T>(String id) {
-    return _store!.get('$prefix/$id')?.value as T?;
+    return _store!.get(id)?.value as T?;
   }
 
   Stream<T?> listen<T>(String id) {
-    return _store!.listen('$prefix/$id').map((event) => event?.value as T?);
+    return _store!.listen(id).map((event) => event?.value as T?);
   }
 }
