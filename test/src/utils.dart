@@ -58,7 +58,10 @@ extension MapExpectExtension on Map {
 
 Directory getTempDir() {
   final dir = Directory.systemTemp.createTempSync('simple_persistence_test');
-  addTearDown(() {
+  addTearDown(() async {
+    // needed because the store might try to delete the file after this tear
+    // down has run so we wait a bit to make sure the store is done
+    await Future.delayed(Duration(milliseconds: 250));
     dir.deleteSync(recursive: true);
   });
   return dir;
