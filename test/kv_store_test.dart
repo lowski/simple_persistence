@@ -8,16 +8,14 @@ import 'src/mock_storables.dart';
 import 'src/utils.dart';
 
 void main() {
-  KVStore create(StorableFactory? sf, FutureOr<String> path) => KVStore(
+  KVStore create(FutureOr<String> path) => KVStore(
         Future.value(path).then(
           (v) => p.join(v, 'kv_store.json'),
         ),
-        storableFactory: sf,
       );
 
   group('KVStore', () {
     late KVStore store;
-    late StorableFactory sf;
     late String path;
 
     final key = '123';
@@ -26,12 +24,11 @@ void main() {
     final valueStorable = UserStorable(name: 'John Doe');
 
     setUp(() async {
-      sf = StorableFactory.I;
-      sf.registerDeserializer(UserStorable.fromMap);
+      PersistenceManager.I.register(UserStorable.fromMap);
 
       path = getTempDir().path;
 
-      store = create(sf, path);
+      store = create(path);
       await store.loaded;
     });
 
@@ -95,7 +92,7 @@ void main() {
         store.save(key, valueStorable);
 
         await Future.delayed(Duration(milliseconds: 500));
-        final store2 = create(sf, path);
+        final store2 = create(path);
         await store2.loaded;
 
         expect(store.get(key), valueStorable);
@@ -105,7 +102,7 @@ void main() {
         store.save(key, value);
 
         await Future.delayed(Duration(milliseconds: 500));
-        final store2 = create(sf, path);
+        final store2 = create(path);
         await store2.loaded;
 
         expect(store.get(key), value);
@@ -117,7 +114,7 @@ void main() {
         store.delete(key);
 
         await Future.delayed(Duration(milliseconds: 500));
-        final store2 = create(sf, path);
+        final store2 = create(path);
         await store2.loaded;
 
         expect(store2.get(key), isNull);
@@ -129,7 +126,7 @@ void main() {
         store.delete(key);
 
         await Future.delayed(Duration(milliseconds: 500));
-        final store2 = create(sf, path);
+        final store2 = create(path);
         await store2.loaded;
 
         expect(store2.listen(key), emits(null));

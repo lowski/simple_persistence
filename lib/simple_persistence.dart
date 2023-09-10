@@ -1,5 +1,6 @@
 library;
 
+export 'src/persistence_manager.dart';
 export 'src/storable.dart';
 export 'src/storable_factory.dart';
 export 'src/stores/big_json_store.dart';

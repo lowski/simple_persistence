@@ -13,3 +13,8 @@ String uuidv4() {
     },
   );
 }
+
+/// Generate a type id from a type name.
+String getInternalTypeId(String typeName) {
+  return typeName.hashCode.toRadixString(36);
+}

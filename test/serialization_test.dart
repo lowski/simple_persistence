@@ -5,6 +5,16 @@ import 'src/mock_storables.dart';
 import 'src/utils.dart';
 
 void main() {
+  test('PersistenceManager does not work without registration', () {
+    expect(
+      () {
+        final user = UserStorable(name: 'John Doe');
+        user.asJson;
+      },
+      throwsUnsupportedError,
+    );
+  });
+
   group('Serialization', () {
     final user = UserStorable(name: 'John Doe');
 
@@ -12,6 +22,11 @@ void main() {
       title: 'Hello World',
       author: user,
     );
+
+    setUpAll(() {
+      PersistenceManager.I.register(UserStorable.fromMap);
+      PersistenceManager.I.register(PostStorable.fromMap);
+    });
 
     test('map representation on simple object', () {
       user.data.expectKV('name', 'John Doe');
@@ -33,20 +48,10 @@ void main() {
   });
 
   group('Deserialization', () {
-    test('does not work if deserializer is not registered', () {
-      final user = UserStorable(name: 'John Doe');
-      final serialized = user.asJson;
-
-      printOnFailure("Serialized UserStorable: ${user.asJson}");
-
-      expect(() => StorableFactory.I.deserialize(serialized),
-          throwsUnsupportedError);
-    });
-
     group(null, () {
       setUpAll(() {
-        StorableFactory.I.registerDeserializer(UserStorable.fromMap);
-        StorableFactory.I.registerDeserializer(PostStorable.fromMap);
+        PersistenceManager.I.register(UserStorable.fromMap);
+        PersistenceManager.I.register(PostStorable.fromMap);
       });
 
       test('creates identical simple object', () {

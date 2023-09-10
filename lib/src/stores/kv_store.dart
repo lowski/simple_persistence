@@ -26,13 +26,8 @@ class KVStore {
 
   /// Create a new [KVStore] instance with a given prefix. A unique prefix is
   /// important to avoid collisions with other [KVStore] instances.
-  KVStore(
-    FutureOr<String> path, {
-    StorableFactory? storableFactory,
-  }) : _store = JsonFileStore(
-          path: path,
-        ) {
-    StorableFactory.I.registerDeserializer(_KVStorable.fromMap);
+  KVStore(FutureOr<String> path) : _store = JsonFileStore(path: path) {
+    PersistenceManager.I.register(_KVStorable.fromMap);
   }
 
   Future<void> get loaded => _store!.loaded;

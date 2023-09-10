@@ -12,9 +12,8 @@ void testStoreImplementation(
     late Store<UserStorable> userStore;
     late String path;
 
-    final StorableFactory sf = StorableFactory.I;
-    sf.registerDeserializer(UserStorable.fromMap);
-    sf.registerDeserializer(PostStorable.fromMap);
+    PersistenceManager.I.register(UserStorable.fromMap);
+    PersistenceManager.I.register(PostStorable.fromMap);
 
     test('loads without errors', () async {
       final store = create<UserStorable>(path);

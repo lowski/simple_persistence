@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:meta/meta.dart';
 
+import 'persistence_manager.dart';
 import 'reserved_tokens.dart';
 
 abstract class Storable {
@@ -28,14 +29,10 @@ abstract class Storable {
   @protected
   Map get data;
 
-  /// A unique identifier for the type of object used for deserialization.
-  /// By default, this is the hash code of the runtime type.
-  String get type => runtimeType.toString().hashCode.toRadixString(36);
-
   /// The object fully represented as a map with embedded objects serialized.
   Map<String, dynamic> get asMap => {
         ReservedTokens.id: id,
-        ReservedTokens.type: type,
+        ReservedTokens.type: PersistenceManager.I.getTypeId(runtimeType),
         ...data,
       }.map(
         (key, value) => MapEntry(
