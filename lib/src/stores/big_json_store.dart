@@ -8,12 +8,10 @@ import '../../simple_persistence.dart';
 
 class BigJsonStore<T extends Storable> extends Store<T> {
   final FutureOr<String> path;
-  final StorableFactory storableFactory;
   Directory? _dir;
 
   BigJsonStore({
     required this.path,
-    required this.storableFactory,
   }) {
     eventStream.listen(_onEvent);
   }
@@ -38,7 +36,7 @@ class BigJsonStore<T extends Storable> extends Store<T> {
       paths.map(
         (e) async {
           final map = jsonDecode(await File(e).readAsString());
-          final storable = storableFactory
+          final storable = StorableFactory.I
               .deserializeMapRepresentation<T>(map as Map<String, dynamic>);
           data[storable.id] = storable;
         },

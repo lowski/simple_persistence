@@ -3,10 +3,7 @@ import 'dart:async';
 import '../../simple_persistence.dart';
 
 class _KVStorable extends Storable {
-  static final storableFactory = StorableFactory()
-    ..registerDeserializer(_KVStorable.fromMap);
-
-  dynamic value;
+  final dynamic value;
 
   _KVStorable(this.value);
 
@@ -15,8 +12,8 @@ class _KVStorable extends Storable {
         'v': value,
       };
 
-  _KVStorable.fromMap(Map<String, dynamic> map) {
-    value = map['v'];
+  factory _KVStorable.fromMap(Map<String, dynamic> map) {
+    return _KVStorable(map['v']);
   }
 }
 
@@ -34,10 +31,9 @@ class KVStore {
     StorableFactory? storableFactory,
   }) : _store = JsonFileStore(
           path: path,
-          storableFactory: (storableFactory
-                ?..registerDeserializer(_KVStorable.fromMap)) ??
-              _KVStorable.storableFactory,
-        );
+        ) {
+    StorableFactory.I.registerDeserializer(_KVStorable.fromMap);
+  }
 
   Future<void> get loaded => _store!.loaded;
 

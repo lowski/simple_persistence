@@ -11,6 +11,13 @@ typedef StorableDeserializer<T extends Storable> = T Function(
 
 /// A factory for deserializing [Storable] objects.
 class StorableFactory {
+  static final _instance = StorableFactory._();
+
+  /// Get the [StorableFactory] instance.
+  static StorableFactory get I => _instance;
+
+  StorableFactory._();
+
   final Map<Type, StorableDeserializer> _deserializers = {};
   final Map<String, Type> _types = {};
 

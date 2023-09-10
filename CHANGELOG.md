@@ -9,3 +9,9 @@
 ## 0.2.0
 
 - Add a KV store
+
+## 0.3.0
+
+- Remove static functions of `KVStore`
+- Change `KVStore` initialization to be like a normal `Store`
+- Change `StorableFactory` to a singleton

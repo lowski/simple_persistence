@@ -39,47 +39,46 @@ void main() {
 
       printOnFailure("Serialized UserStorable: ${user.asJson}");
 
-      final sf = StorableFactory();
-
-      expect(() => sf.deserialize(serialized), throwsUnsupportedError);
+      expect(() => StorableFactory.I.deserialize(serialized),
+          throwsUnsupportedError);
     });
 
-    test('creates identical simple object', () {
-      final user = UserStorable(name: 'John Doe');
-      final serialized = user.asJson;
+    group(null, () {
+      setUpAll(() {
+        StorableFactory.I.registerDeserializer(UserStorable.fromMap);
+        StorableFactory.I.registerDeserializer(PostStorable.fromMap);
+      });
 
-      printOnFailure("Original UserStorable: ${user.asJson}");
+      test('creates identical simple object', () {
+        final user = UserStorable(name: 'John Doe');
+        final serialized = user.asJson;
 
-      final sf = StorableFactory();
-      sf.registerDeserializer(UserStorable.fromMap);
+        printOnFailure("Original UserStorable: ${user.asJson}");
 
-      final deserialized = sf.deserialize(serialized);
+        final deserialized = StorableFactory.I.deserialize(serialized);
 
-      printOnFailure("Deserialized UserStorable: ${deserialized.asJson}");
+        printOnFailure("Deserialized UserStorable: ${deserialized.asJson}");
 
-      expect(deserialized, isA<UserStorable>());
-      expect(deserialized, user);
-    });
+        expect(deserialized, isA<UserStorable>());
+        expect(deserialized, user);
+      });
 
-    test('creates identical nested object', () {
-      final user = UserStorable(name: 'John Doe');
-      final post = PostStorable(
-        title: 'Hello World',
-        author: user,
-      );
+      test('creates identical nested object', () {
+        final user = UserStorable(name: 'John Doe');
+        final post = PostStorable(
+          title: 'Hello World',
+          author: user,
+        );
 
-      final serialized = post.asJson;
+        final serialized = post.asJson;
 
-      printOnFailure("Serialized PostStorable: ${post.asJson}");
+        printOnFailure("Serialized PostStorable: ${post.asJson}");
 
-      final sf = StorableFactory();
-      sf.registerDeserializer(UserStorable.fromMap);
-      sf.registerDeserializer(PostStorable.fromMap);
+        final deserialized = StorableFactory.I.deserialize(serialized);
 
-      final deserialized = sf.deserialize(serialized);
-
-      expect(deserialized, isA<PostStorable>());
-      expect(deserialized, post);
+        expect(deserialized, isA<PostStorable>());
+        expect(deserialized, post);
+      });
     });
   });
 }

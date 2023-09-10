@@ -6,26 +6,25 @@ import 'src/utils.dart';
 
 void testStoreImplementation(
   Type storeType,
-  Store<T> Function<T extends Storable>(StorableFactory sf, String path) create,
+  Store<T> Function<T extends Storable>(String path) create,
 ) {
   group(storeType.toString(), () {
     late Store<UserStorable> userStore;
-    late StorableFactory sf;
     late String path;
 
+    final StorableFactory sf = StorableFactory.I;
+    sf.registerDeserializer(UserStorable.fromMap);
+    sf.registerDeserializer(PostStorable.fromMap);
+
     test('loads without errors', () async {
-      final store = create<UserStorable>(StorableFactory(), path);
+      final store = create<UserStorable>(path);
       await store.loaded;
     });
 
     setUp(() async {
-      sf = StorableFactory();
-      sf.registerDeserializer(UserStorable.fromMap);
-      sf.registerDeserializer(PostStorable.fromMap);
-
       path = getTempDir().path;
 
-      userStore = create(sf, path);
+      userStore = create(path);
       await userStore.loaded;
     });
 
@@ -106,7 +105,7 @@ void testStoreImplementation(
         userStore.save(user);
 
         await Future.delayed(Duration(milliseconds: 500));
-        final store = create<UserStorable>(sf, path);
+        final store = create<UserStorable>(path);
         await store.loaded;
 
         expect(store.get('123'), user);
@@ -118,7 +117,7 @@ void testStoreImplementation(
         userStore.delete('123');
 
         await Future.delayed(Duration(milliseconds: 500));
-        final store = create<UserStorable>(sf, path);
+        final store = create<UserStorable>(path);
         await store.loaded;
 
         expect(store.get('123'), isNull);
@@ -130,7 +129,7 @@ void testStoreImplementation(
         userStore.delete('123');
 
         await Future.delayed(Duration(milliseconds: 500));
-        final store = create<UserStorable>(sf, path);
+        final store = create<UserStorable>(path);
         await store.loaded;
 
         expect(store.listen('123'), emits(null));
@@ -143,18 +142,16 @@ void main() {
   group('Store implementation', () {
     testStoreImplementation(
       JsonFileStore,
-      <T extends Storable>(sf, path) => JsonFileStore<T>(
+      <T extends Storable>(path) => JsonFileStore<T>(
         path: '$path/test.json',
-        storableFactory: sf,
       ),
     );
 
     testStoreImplementation(
       BigJsonStore,
-      <T extends Storable>(sf, path) {
+      <T extends Storable>(path) {
         return BigJsonStore<T>(
           path: path,
-          storableFactory: sf,
         );
       },
     );

@@ -11,12 +11,10 @@ import '../../simple_persistence.dart';
 /// change.
 class JsonFileStore<T extends Storable> extends Store<T> {
   final FutureOr<String> path;
-  final StorableFactory storableFactory;
   File? _file;
 
   JsonFileStore({
     required this.path,
-    required this.storableFactory,
   });
 
   @override
@@ -39,7 +37,7 @@ class JsonFileStore<T extends Storable> extends Store<T> {
     final list = List<Map>.from(jsonDecode(json));
     final data = <String, T>{};
     for (final map in list) {
-      final storable = storableFactory
+      final storable = StorableFactory.I
           .deserializeMapRepresentation<T>(map as Map<String, dynamic>);
       data[storable.id] = storable;
     }

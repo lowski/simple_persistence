@@ -26,7 +26,7 @@ void main() {
     final valueStorable = UserStorable(name: 'John Doe');
 
     setUp(() async {
-      sf = StorableFactory();
+      sf = StorableFactory.I;
       sf.registerDeserializer(UserStorable.fromMap);
 
       path = getTempDir().path;
