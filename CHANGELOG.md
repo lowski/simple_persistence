@@ -15,3 +15,8 @@
 - Remove static functions of `KVStore`
 - Change `KVStore` initialization to be like a normal `Store`
 - Change `StorableFactory` to a singleton
+
+## 0.3.1
+
+- Fix that only the first listener of a `ValueStream` would get the last value on listening
+- Add `listenAll()` on `Store` to get a stream of the list of objects

@@ -5,8 +5,15 @@ import 'dart:async';
 /// [Stream].
 class ValueStreamController<T> implements StreamController<T> {
   final StreamController<T> _controller;
+
+  // We need to create a new [Stream] here, because we need to intercept the
+  // listen call and emit the last value to it. If we used the
+  // [StreamController]'s stream, we would only be able to intercept the first
+  // listen call (via the onListen function) but not any further listeners.
   @override
-  Stream<T> get stream => _controller.stream;
+  Stream<T> get stream => _ValueStream(this);
+
+  Stream<T> get _internalStream => _controller.stream;
 
   bool _hasValue = false;
   T? _lastValue;
@@ -28,15 +35,8 @@ class ValueStreamController<T> implements StreamController<T> {
       _hasValue = true;
     }
 
-    _controller.onListen = () {
-      if (_hasValue) {
-        _controller.add(_lastValue as T);
-      }
-      onListen?.call();
-    };
-    _controller.onCancel = () {
-      onCancel?.call();
-    };
+    _controller.onListen = () => onListen?.call();
+    _controller.onCancel = () => onCancel?.call();
   }
 
   /// Add a new value to the [ValueStreamController].
@@ -87,6 +87,36 @@ class ValueStreamController<T> implements StreamController<T> {
 
   @override
   StreamSink<T> get sink => _controller.sink;
+}
+
+/// A [Stream] that emits the last emitted value to any listener when the
+/// listener first subscribes to the [Stream].
+class _ValueStream<T> extends Stream<T> {
+  final ValueStreamController<T> _controller;
+
+  _ValueStream(this._controller);
+
+  @override
+  StreamSubscription<T> listen(
+    void Function(T event)? onData, {
+    Function? onError,
+    void Function()? onDone,
+    bool? cancelOnError,
+  }) {
+    // We need to schedule the call to [onData] in a microtask, because the
+    // listener might not be ready to receive the value yet.
+    scheduleMicrotask(() {
+      if (_controller._hasValue) {
+        onData?.call(_controller.value as T);
+      }
+    });
+    return _controller._internalStream.listen(
+      onData,
+      onError: onError,
+      onDone: onDone,
+      cancelOnError: cancelOnError,
+    );
+  }
 }
 
 /// A wrapper that manages multiple [ValueStreamController]s.
