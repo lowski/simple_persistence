@@ -59,6 +59,7 @@ abstract class Store<T extends Storable> {
   Stream<StoreDataModifiedEvent<T>> get eventStream => _controller.stream;
 
   final _mvsc = MultiValueStreamController<String, T?>();
+  final _listStream = ValueStreamController<List<T>>();
 
   final Map<String, T> _data = {};
 
@@ -75,6 +76,7 @@ abstract class Store<T extends Storable> {
         event is StorableDeletedEvent ? null : event.storable,
       );
 
+      _listStream.add(list());
       persistAll(_data);
     });
     _load();
@@ -96,6 +98,7 @@ abstract class Store<T extends Storable> {
     for (final e in _data.entries) {
       _notifyValueStream(e.key, e.value);
     }
+    _listStream.add(list());
   }
 
   /// Load the data from persistent storage. This method is called once when
@@ -137,6 +140,13 @@ abstract class Store<T extends Storable> {
     _mvsc.add(id, get(id));
 
     return valueStream;
+  }
+
+  /// Listen for changes to all [Storable] objects in the store. The [Stream]
+  /// will emit the current list of [Storable] objects when it's being listened
+  /// to and all future changes to the list.
+  Stream<List<T>> listenAll() {
+    return _listStream.stream;
   }
 
   T save(T value) {
