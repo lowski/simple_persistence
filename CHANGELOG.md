@@ -1,3 +1,7 @@
+## 0.3.3
+
+* Add MIT license
+
 ## 0.3.2
 
 * Add `ValueStream` to the public api (via `package:simple_persistence/utils.dart`)
