@@ -1,3 +1,9 @@
+# Changelog
+
+## 0.3.4
+
+* Register a deserializer by an object's `runtimeType`
+
 ## 0.3.3
 
 * Add MIT license

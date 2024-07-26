@@ -46,6 +46,20 @@ class PersistenceManager {
     _typeIds[getInternalTypeId(typeName)] = T;
   }
 
+  /// Register the §runtimeType§ of the given storable [instance].
+  ///
+  /// Only use this if the runtimeType is hidden such as when using freezed.
+  /// Otherwise use [register].
+  void registerRuntimeType({
+    required Storable instance,
+    required StorableDeserializer deserializer,
+    String? typeName,
+  }) {
+    _deserializers[instance.runtimeType] = deserializer;
+    typeName ??= instance.runtimeType.toString();
+    _typeIds[getInternalTypeId(typeName)] = instance.runtimeType;
+  }
+
   /// Get the [Type] for a given typeId.
   Type _getType(String typeId) {
     if (!_typeIds.containsKey(typeId)) {
