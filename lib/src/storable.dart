@@ -37,7 +37,11 @@ abstract class Storable {
       }.map(
         (key, value) => MapEntry(
           key,
-          value is Storable ? value.asMap : value,
+          value is Storable
+              ? value.asMap
+              : (value is List && value.firstOrNull is Storable
+                  ? value.map((e) => e.asMap).toList()
+                  : value),
         ),
       );
 

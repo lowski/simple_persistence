@@ -34,6 +34,14 @@ class StorableFactory {
       if (entry.value is Map<String, dynamic> &&
           entry.value.containsKey(ReservedTokens.type)) {
         map[entry.key] = deserializeMapRepresentation(entry.value);
+      } else if (entry.value is List<dynamic> &&
+          entry.value.isNotEmpty &&
+          entry.value.first is Map<String, dynamic> &&
+          entry.value.first.containsKey(ReservedTokens.type)) {
+        map[entry.key] = entry.value
+            .map((v) => deserializeMapRepresentation(v))
+            .toList()
+            .cast();
       }
     }
 
